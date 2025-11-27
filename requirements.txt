@@ -8,3 +8,4 @@ rich>=12.5.1
 urllib3>=1.26.0
 pycryptodome>=3.15.0
 asyncio
+pip install pyTelegramBotAPI
