@@ -1,4 +1,5 @@
 # DeVloped By @LipuGaming_ff
+# Updated with Telegram Control
 import requests
 import os
 import psutil
@@ -20,6 +21,7 @@ import ssl
 import gzip
 import asyncio
 import gc
+import telebot # Library for Telegram
 
 from io import BytesIO
 from protobuf_decoder.protobuf_decoder import Parser
@@ -36,6 +38,17 @@ from rich.align import Align
 console = Console()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# ==========================================
+# TELEGRAM CONFIGURATION
+# ==========================================
+BOT_TOKEN = "6367162912:AAHxU5XkfxeVOfcc_gTN3rxpv-p9GPI459k"
+TARGET_FILE = "targets.json"
+
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# ==========================================
+# CORE BOT FUNCTIONS
+# ==========================================
 
 def G_AccEss(U, P):
     UrL = "https://100067.connect.garena.com/oauth/guest/token/grant"
@@ -93,20 +106,14 @@ def MajorLoGin(PyL):
         conn.close()
 
 
-# ensure this exists in your original file; it's referenced below
 try:
     Thread(target=AuTo_ResTartinG, daemon=True).start()
 except Exception:
-    # if AuTo_ResTartinG not defined yet, ignore here; original file likely defines it later
     pass
 
 
 class FF_CLient:
     def __init__(self, U, P, forced_target=None):
-        """
-        forced_target: optional. If provided, it will be used as the GroupID (TarGeT)
-        instead of the GroupID parsed from incoming packets.
-        """
         self.empty_count = 0
         self.reader = None
         self.writer = None
@@ -154,27 +161,9 @@ class FF_CLient:
                         if not self.DaTa:
                             await asyncio.sleep(0.2)
                             break
-                        # commented out behavior preserved
-                    except (
-                        asyncio.TimeoutError,
-                        ConnectionResetError,
-                        ConnectionAbortedError,
-                        asyncio.IncompleteReadError,
-                        BrokenPipeError,
-                        OSError,
-                        Exception,
-                    ) as e:
+                    except Exception as e:
                         pass
-            except (
-                asyncio.TimeoutError,
-                ConnectionRefusedError,
-                ConnectionResetError,
-                ConnectionAbortedError,
-                asyncio.IncompleteReadError,
-                BrokenPipeError,
-                OSError,
-                Exception,
-            ) as e:
+            except Exception as e:
                 pass
 
     async def ChaT(self, Token, tok, host, port, key, iv, bot_uid, R):
@@ -203,12 +192,11 @@ class FF_CLient:
                             Uu = json.loads(U["5"]["data"]["8"]["data"])
 
                             Nm = U2["9"]["data"]["1"]["data"]
-                            # Use forced target if provided, otherwise parse from packet
+                            
                             if self.forced_target:
                                 try:
                                     TarGeT = int(self.forced_target)
                                 except Exception:
-                                    # fallback to parsed GroupID if forced_target invalid
                                     TarGeT = int(Uu.get("GroupID", 0))
                             else:
                                 TarGeT = int(Uu["GroupID"])
@@ -216,11 +204,9 @@ class FF_CLient:
                             sQ = Uu["SecretCode"]
                             rQ = Uu.get("RecruitCode")
 
-                            # RedZed_3alamyia_Chat(uid, code , K, I)
                             self.writer.write(RedZed_3alamyia_Chat(TarGeT, sQ, key, iv))
                             await self.writer.drain()
 
-                            # ---- FIXED MESSAGE (no f-string issues) ----
                             msg_part1 = (
                                 "-HELLO I AM SPIDEERIO GAMING  !\n\n"
                                 "SUBSCRIBE ME ON YOUTUBE  OR BE BANNED \n\n"
@@ -241,21 +227,17 @@ class FF_CLient:
                                 + xMsGFixinG(msg_part3)
                             )
 
-                            # send message
                             self.writer.write(RedZed_SendMsg(full_msg, TarGeT, bot_uid, key, iv))
                             await self.writer.drain()
 
                             await asyncio.sleep(1.5)
 
-                            # send invite
                             try:
                                 self.writer2.write(RedZed_SendInv(bot_uid, TarGeT, key, iv))
                                 await self.writer2.drain()
                             except Exception:
-                                # writer2 might not exist or be connected; ignore if it fails
                                 pass
 
-                            # quit chat
                             try:
                                 self.writer.write(quit_caht_redzed(TarGeT, key, iv))
                                 await self.writer.drain()
@@ -263,29 +245,11 @@ class FF_CLient:
                                 pass
 
                             await asyncio.sleep(1.2)
-
                             print("With => {}".format(bot_uid), "To => {}".format(TarGeT))
 
-                    except (
-                        asyncio.TimeoutError,
-                        ConnectionResetError,
-                        ConnectionAbortedError,
-                        asyncio.IncompleteReadError,
-                        BrokenPipeError,
-                        OSError,
-                        Exception,
-                    ) as e:
+                    except Exception as e:
                         pass
-            except (
-                asyncio.TimeoutError,
-                ConnectionRefusedError,
-                ConnectionResetError,
-                ConnectionAbortedError,
-                asyncio.IncompleteReadError,
-                BrokenPipeError,
-                OSError,
-                Exception,
-            ) as e:
+            except Exception as e:
                 pass
 
     def GeT_Key_Iv(self, serialized_data):
@@ -456,8 +420,6 @@ class FF_CLient:
             print(f" - Erorr In Final Token : {e}")
         self.AutH_ToKen = self.FiNal_ToKen_0115
         os.system("clear")
-        # NOTE: this will block until STarT completes because STarT runs asyncio tasks
-        # but it's how original code worked (asyncio.run inside constructor call flow).
         asyncio.run(self.STarT(self.JwT_ToKen, self.AutH_ToKen, ip, port, ip2, port2, key, iv, bot_uid))
         return self.AutH_ToKen, key, iv
 
@@ -480,27 +442,87 @@ def StarT_SerVer():
     console.print(panel)
 
 
-# ---------------------------
-# NEW LAUNCHER / FAST START
-# ---------------------------
-
 def start_all_bots(accounts, forced_targets, max_workers=50):
-    """
-    Start FF_CLient for every account and every forced target in parallel.
-    max_workers controls concurrency to avoid spawning too many threads at once.
-    """
     total_tasks = len(accounts) * len(forced_targets)
-    # sensible default for max_workers
     max_workers = min(max_workers, total_tasks) if total_tasks > 0 else 1
-
     print(f"[INFO] Starting {total_tasks} bot tasks with up to {max_workers} workers...")
 
-    # Use ThreadPoolExecutor to control concurrency and be faster than naive threading
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for acc_uid, acc_pwd in accounts.items():
             for target in forced_targets:
-                # submit constructor call which will run the login/start sequence
                 futures.append(executor.submit(FF_CLient, acc_uid, acc_pwd, target))
+        
+        for future in futures:
+            try:
+                future.result()
+            except Exception as e:
+                print(f"Task error: {e}")
 
-        # Wait for all to complete (note: FF_CLient constructor blocks while runn
+# ==========================================
+# TELEGRAM LOGIC
+# ==========================================
+
+def load_targets():
+    if os.path.exists(TARGET_FILE):
+        with open(TARGET_FILE, "r") as f:
+            try:
+                return json.load(f)
+            except:
+                return []
+    return []
+
+def save_targets(targets):
+    with open(TARGET_FILE, "w") as f:
+        json.dump(targets, f)
+
+@bot.message_handler(commands=['set'])
+def handle_set_target(message):
+    try:
+        parts = message.text.split()[1:]
+        if not parts:
+            bot.reply_to(message, "⚠️ Send IDs like: /set 12345 67890")
+            return
+        
+        save_targets(parts)
+        bot.reply_to(message, f"✅ Targets Updated: {parts}\n♻️ Restarting Bot...")
+        print("Restaring via Telegram Command...")
+        ResTarTinG() 
+        
+    except Exception as e:
+        bot.reply_to(message, f"❌ Error: {e}")
+
+def run_telegram_bot():
+    try:
+        print(render("Telegram ON", colors=["white", "blue"], align="center"))
+        bot.polling(non_stop=True)
+    except Exception as e:
+        print(f"Telegram Error: {e}")
+
+# ==========================================
+# MAIN EXECUTION
+# ==========================================
+
+if __name__ == "__main__":
+    # 1. Start Telegram Bot Thread
+    t = Thread(target=run_telegram_bot)
+    t.daemon = True
+    t.start()
+
+    # 2. Load Accounts
+    try:
+        accounts = load_accounts()
+    except FileNotFoundError:
+        print("Error: vv.json file not found!")
+        sys.exit()
+
+    # 3. Load Targets
+    target_list = load_targets()
+    
+    if not target_list:
+        print("⚠️ No targets found! Use /set [id] in Telegram to start.")
+        print("Waiting for commands...")
+        t.join() 
+    else:
+        print(f"Current Targets: {target_list}")
+        start_all_bots(accounts, target_list, max_workers=50)
