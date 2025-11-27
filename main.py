@@ -1,5 +1,5 @@
 # DeVloped By @LipuGaming_ff
-# Updated with Telegram Control
+# Updated with URL Fix and Telegram Control
 import requests
 import os
 import psutil
@@ -168,7 +168,7 @@ class FF_CLient:
 
     async def ChaT(self, Token, tok, host, port, key, iv, bot_uid, R):
         T = "fr"
-        print(bot_uid)
+        # print(bot_uid) # Reduced spam
         global writer, writer2, TarGeT, sQ, Nm
         while True:
             try:
@@ -263,8 +263,9 @@ class FF_CLient:
         combined_timestamp = timestamp_seconds * 1_000_000_000 + timestamp_nanos
         return combined_timestamp, key, iv
 
+    # UPDATED FUNCTION HERE
     def GeT_LoGin_PorTs(self, JwT_ToKen, PayLoad):
-        self.UrL = "https://client.ind.freefiremobile.com/GetLoginData"
+        self.UrL = "https://clientbp.ggblueshark.com/GetLoginData"
         self.HeadErs = {
             "Expect": "100-continue",
             "Authorization": f"Bearer {JwT_ToKen}",
@@ -273,7 +274,7 @@ class FF_CLient:
             "ReleaseVersion": "OB51",
             "Content-Type": "application/x-www-form-urlencoded",
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 9; G011A Build/PI)",
-            "Host": "client.ind.freefiremobile.com",
+            "Host": "clientbp.ggblueshark.com",
             "Connection": "close",
             "Accept-Encoding": "gzip, deflate, br",
         }
@@ -284,10 +285,11 @@ class FF_CLient:
             ip, ip2 = address[: len(address) - 6], address2[: len(address) - 6]
             port, port2 = address[len(address) - 5 :], address2[len(address2) - 5 :]
             return ip, port, ip2, port2
-        except requests.RequestException as e:
-            print(f" - Bad Requests !")
+        except Exception as e:
+            print(f" - Bad Requests ! Error: {e}")
+        
         print(" - Failed To GeT PorTs !")
-        return None, None
+        return None, None, None, None
 
     def ToKen_GeneRaTe(self, U, P):
         try:
@@ -357,7 +359,7 @@ class FF_CLient:
                 }
             try:
                 self.PyL = CrEaTe_ProTo(self.PyL).hex()
-                print(self.PyL)
+                # print(self.PyL)
                 self.PaYload = bytes.fromhex(EnC_AEs(self.PyL))
             except:
                 ResTarTinG()
